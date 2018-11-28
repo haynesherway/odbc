@@ -249,14 +249,16 @@ func (c *BindableColumn) Value(h api.SQLHSTMT, idx int) (driver.Value, error) {
 			return nil, NewError("SQLGetData", h)
 		}
 	}
-	if c.Len.IsNull() {
+	if c.Len.IsNull() || len(c.Buffer) < int(c.Len) {
 		// is NULL
 		return nil, nil
 	}
 	if !c.IsVariableWidth && int(c.Len) != c.Size {
 		return nil, fmt.Errorf("wrong column #%d length %d returned, %d expected", idx, c.Len, c.Size)
 	}
+
 	return c.BaseColumn.Value(c.Buffer[:c.Len])
+
 }
 
 // NonBindableColumn provide access to columns, that can't be bound.
